@@ -1,13 +1,13 @@
 name: Create in-app deployment
 on:
-  workflow-call:
+  workflow_call:
     secrets:
       EXPO_TOKEN:
         required: true
       PAT:
         required: true
 jobs:
-  build:
+  retrieve-env:
     runs-on: ubuntu-latest
     steps:
       - name: Retrieve Environment
@@ -22,7 +22,7 @@ jobs:
     outputs:
       env: ${{ steps.retrieve-env.outputs.env }}
   publish:
-    needs: [build]
+    needs: [retrieve-env]
     runs-on: ubuntu-latest
     steps:
       - name: 🏗 Setup repo
@@ -49,17 +49,17 @@ jobs:
       - name: 📦 Get release channel 
         id: retrieve-rc
         env:
-          ENV: ${{ needs.build.outputs.env }}
+          ENV: ${{ needs.retrieve-env.outputs.env }}
         shell: bash
         run: |
           rc=`cat ./eas.json | jq -r ".build .$ENV .releaseChannel"`
           echo "##[set-output name=releaseChannel;]$(echo ${rc})"
       
       - name: 🏗 Staging Patch
-        if: ${{ needs.build.outputs.env == 'staging' }}
+        if: ${{ needs.retrieve-env.outputs.env == 'staging' }}
         run: bash scripts/patch-staging.sh
       
       - name: 🚀 Publish preview
         env:
-          ENV: 
+          ENV: ${{ needs.retrieve-env.outputs.env }}
         run: expo publish --release-channel=${{ steps.retrieve-rc.outputs.releaseChannel }} --non-interactive

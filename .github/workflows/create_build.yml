@@ -1,7 +1,7 @@
 name: Create EAS build
 
 on:
-  workflow-call:
+  workflow_call:
     secrets:
       EXPO_TOKEN:
         required: true

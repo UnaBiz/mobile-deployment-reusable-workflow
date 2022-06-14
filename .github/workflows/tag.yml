@@ -6,7 +6,7 @@ on:
         required: true
 
 jobs:
-  build:
+  retrieve-env:
     runs-on: ubuntu-latest
     steps:
       - name: Retrieve Environment
@@ -21,7 +21,7 @@ jobs:
     outputs:
       env: ${{ steps.retrieve-env.outputs.env }}
   release:
-    needs: [build]
+    needs: [retrieve-env]
     name: Setup
     runs-on: ubuntu-latest
     steps:
@@ -38,7 +38,7 @@ jobs:
         id: retrieve-rc
         shell: bash
         env:
-          ENV: ${{ needs.build.outputs.env }}
+          ENV: ${{ needs.retrieve-env.outputs.env }}
         run: |
           rc=`cat ./eas.json | jq -r ".build .$ENV .releaseChannel"`
           echo "##[set-output name=releaseChannel;]$(echo ${rc})"
