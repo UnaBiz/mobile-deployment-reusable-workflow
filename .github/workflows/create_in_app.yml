@@ -1,0 +1,65 @@
+name: Create in-app deployment
+on:
+  workflow-call:
+    secrets:
+      EXPO_TOKEN:
+        required: true
+      PAT:
+        required: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Retrieve Environment
+        id: retrieve-env
+        shell: bash
+        run: |
+          ENV="staging"
+          if [[ "${GITHUB_REF#refs/heads/}" == "master" ]]; then
+            ENV="production"
+          fi
+          echo "##[set-output name=env;]$(echo ${ENV})"
+    outputs:
+      env: ${{ steps.retrieve-env.outputs.env }}
+  publish:
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🏗 Setup repo
+        uses: actions/checkout@v3
+
+      - name: 🏗 Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14.x
+          cache: yarn
+      
+      - name: 🏗 Setup Expo
+        uses: expo/expo-github-action@v7
+        with:
+          expo-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: 📦 Install dependencies
+        run: |
+          echo '@unabiz:registry=https://npm.pkg.github.com' > ${{ github.workspace }}/.npmrc
+          echo '//npm.pkg.github.com/:_authToken=${{ secrets.PAT }}' >> ${{ github.workspace }}/.npmrc
+          yarn eas-build-pre-install
+
+      - name: 📦 Get release channel 
+        id: retrieve-rc
+        env:
+          ENV: ${{ needs.build.outputs.env }}
+        shell: bash
+        run: |
+          rc=`cat ./eas.json | jq -r ".build .$ENV .releaseChannel"`
+          echo "##[set-output name=releaseChannel;]$(echo ${rc})"
+      
+      - name: 🏗 Staging Patch
+        if: ${{ needs.build.outputs.env == 'staging' }}
+        run: bash scripts/patch-staging.sh
+      
+      - name: 🚀 Publish preview
+        env:
+          ENV: 
+        run: expo publish --release-channel=${{ steps.retrieve-rc.outputs.releaseChannel }} --non-interactive

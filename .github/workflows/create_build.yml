@@ -1,0 +1,115 @@
+name: Create EAS build
+
+on:
+  workflow-call:
+    secrets:
+      EXPO_TOKEN:
+        required: true
+      PAT:
+        required: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Retrieve Environment
+        id: retrieve-env
+        shell: bash
+        run: |
+          ENV="production"
+          if [[ "${GITHUB_REF#refs/heads/}" == *"release-staging-v"* ]]; then
+            ENV="staging"
+          fi
+          echo "${GITHUB_REF#refs/heads/}"
+          echo "${ENV}"
+          echo "##[set-output name=env;]$(echo ${ENV})"
+    outputs:
+      env: ${{ steps.retrieve-env.outputs.env }}
+  build-app:
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - name: 🏗 Setup repo
+        uses: actions/checkout@v3
+
+      - name: 🏗 Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14.x
+          cache: yarn
+
+      - name: 🏗 Setup Expo and EAS
+        uses: expo/expo-github-action@v7
+        with:
+          expo-version: latest
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: 🏗 Staging Patch
+        if:  ${{ needs.build.outputs.env == 'staging' }}
+        run: bash scripts/patch-staging.sh
+
+      - name: 📦 Install dependencies
+        run: |
+          echo '@unabiz:registry=https://npm.pkg.github.com' > ${{ github.workspace }}/.npmrc
+          echo '//npm.pkg.github.com/:_authToken=${{ secrets.PAT }}' >> ${{ github.workspace }}/.npmrc
+          yarn install
+
+      - name: 🚀 Build app
+        env: 
+          ENV: ${{ needs.build.outputs.env }}
+        run: eas build --non-interactive --platform all --profile $ENV
+
+  submit-ios:
+    runs-on: ubuntu-latest
+    needs: [build, build-app]
+    steps:
+      - name: 🏗 Setup repo
+        uses: actions/checkout@v3
+
+      - name: 🏗 Setup Expo and EAS
+        uses: expo/expo-github-action@v7
+        with:
+          expo-version: latest
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: 🏗 Staging Patch
+        if: ${{ needs.build.outputs.env == 'staging' }}
+        run: bash scripts/patch-staging.sh
+
+      - name: Publish IOS
+        env: 
+          ENV: ${{ needs.build.outputs.env }}
+        run: eas submit -p ios --latest --profile $ENV
+
+  submit-android:
+    runs-on: ubuntu-latest
+    needs: [build, build-app]
+    steps:
+      - name: 🏗 Setup repo
+        uses: actions/checkout@v3
+
+      - name: 🏗 Setup Expo and EAS
+        uses: expo/expo-github-action@v7
+        with:
+          expo-version: latest
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: 🏗 Setup Expo and EAS
+        uses: expo/expo-github-action@v7
+        with:
+          expo-version: latest
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: 🏗 Staging Patch
+        if: ${{ needs.build.outputs.env == 'staging' }}
+        run: bash scripts/patch-staging.sh
+
+      - name: Publish Android
+        env: 
+          ENV: ${{ needs.build.outputs.env }}
+        run: eas submit -p android --latest --profile $ENV
+         

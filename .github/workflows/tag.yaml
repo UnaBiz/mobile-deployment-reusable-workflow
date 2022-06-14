@@ -1,0 +1,52 @@
+name: tag branch publish
+on:
+  workflow_call:
+    secrets:
+      PAT:
+        required: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Retrieve Environment
+        id: retrieve-env
+        shell: bash
+        run: |
+          ENV="staging"
+          if [[ "${GITHUB_REF#refs/heads/}" == "master" ]]; then
+            ENV="production"
+          fi
+          echo "##[set-output name=env;]$(echo ${ENV})"
+    outputs:
+      env: ${{ steps.retrieve-env.outputs.env }}
+  release:
+    needs: [build]
+    name: Setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{github.ref}}
+          token: ${{secrets.PAT}}
+
+      - name: setup Node
+        uses: actions/setup-node@v1
+
+      - name: 📦 Get release channel
+        id: retrieve-rc
+        shell: bash
+        env:
+          ENV: ${{ needs.build.outputs.env }}
+        run: |
+          rc=`cat ./eas.json | jq -r ".build .$ENV .releaseChannel"`
+          echo "##[set-output name=releaseChannel;]$(echo ${rc})"
+
+      - name: package-version-to-git-tag
+        uses: pkgdeps/git-tag-action@v2
+        with:
+          github_token: ${{ secrets.PAT }}
+          github_repo: ${{ github.repository }}
+          version: ${{ steps.retrieve-rc.outputs.releaseChannel }}
+          git_commit_sha: ${{ github.sha }}
