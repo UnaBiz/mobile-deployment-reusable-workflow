@@ -55,10 +55,6 @@ jobs:
           rc=`cat ./eas.json | jq -r ".build .$ENV .releaseChannel"`
           echo "##[set-output name=releaseChannel;]$(echo ${rc})"
       
-      - name: 🏗 Staging Patch
-        if: ${{ needs.retrieve-env.outputs.env == 'staging' }}
-        run: bash scripts/patch-staging.sh
-      
       - name: 🚀 Publish preview
         env:
           ENV: ${{ needs.retrieve-env.outputs.env }}

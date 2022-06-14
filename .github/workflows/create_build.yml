@@ -45,10 +45,6 @@ jobs:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
-      - name: 🏗 Staging Patch
-        if:  ${{ needs.retrieve-env.outputs.env == 'staging' }}
-        run: bash scripts/patch-staging.sh
-
       - name: 📦 Install dependencies
         run: |
           echo '@unabiz:registry=https://npm.pkg.github.com' > ${{ github.workspace }}/.npmrc
@@ -73,10 +69,6 @@ jobs:
           expo-version: latest
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
-
-      - name: 🏗 Staging Patch
-        if: ${{ needs.retrieve-env.outputs.env == 'staging' }}
-        run: bash scripts/patch-staging.sh
 
       - name: Publish IOS
         env: 
@@ -103,10 +95,6 @@ jobs:
           expo-version: latest
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
-
-      - name: 🏗 Staging Patch
-        if: ${{ needs.retrieve-env.outputs.env == 'staging' }}
-        run: bash scripts/patch-staging.sh
 
       - name: Publish Android
         env: 
