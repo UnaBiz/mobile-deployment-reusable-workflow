@@ -40,7 +40,7 @@ jobs:
         env:
           ENV: ${{ needs.retrieve-env.outputs.env }}
         run: |
-          rc=`cat ./eas.json | jq -r ".build .$ENV .releaseChannel"`
+          rc=`cat ./eas.json | jq -r ".build .$ENV .channel"`
           echo "##[set-output name=releaseChannel;]$(echo ${rc})"
 
       - name: package-version-to-git-tag
