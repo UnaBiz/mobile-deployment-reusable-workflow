@@ -54,7 +54,7 @@ jobs:
       - name: 🚀 Build app
         env: 
           ENV: ${{ needs.build.outputs.env }}
-        run: eas build --non-interactive --platform all --profile $ENV
+        run: eas build --non-interactive --platform all
 
   submit-ios:
     runs-on: ubuntu-latest
@@ -73,7 +73,7 @@ jobs:
       - name: Publish IOS
         env: 
           ENV: ${{ needs.retrieve-env.outputs.env }}
-        run: eas submit -p ios --latest --profile $ENV
+        run: eas submit -p ios --latest
 
   submit-android:
     runs-on: ubuntu-latest
@@ -99,5 +99,5 @@ jobs:
       - name: Publish Android
         env: 
           ENV: ${{ needs.retrieve-env.outputs.env }}
-        run: eas submit -p android --latest --profile $ENV
+        run: eas submit -p android --latest
          
