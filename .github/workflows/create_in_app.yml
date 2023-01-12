@@ -52,7 +52,7 @@ jobs:
           ENV: ${{ needs.retrieve-env.outputs.env }}
         shell: bash
         run: |
-          rc=`cat ./eas.json | jq -r ".build .$ENV .releaseChannel"`
+          rc=`cat ./eas.json | jq -r ".build .$ENV .channel"`
           echo "##[set-output name=releaseChannel;]$(echo ${rc})"
       
       - name: 🚀 Publish preview
