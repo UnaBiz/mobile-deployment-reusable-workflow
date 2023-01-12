@@ -31,31 +31,34 @@ jobs:
       - name: 🏗 Setup Node
         uses: actions/setup-node@v2
         with:
-          node-version: 14.x
+          node-version: 16.x
           cache: yarn
-      
+
       - name: 🏗 Setup Expo
         uses: expo/expo-github-action@v7
         with:
           expo-version: latest
+          eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
+      
+      - name: 📦 Find yarn cache
+        id: yarn-cache-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+
+      - name: 📦 Restore cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.yarn-cache-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: ${{ runner.os }}-yarn-
 
       - name: 📦 Install dependencies
         run: |
           echo '@unabiz:registry=https://npm.pkg.github.com' > ${{ github.workspace }}/.npmrc
           echo '//npm.pkg.github.com/:_authToken=${{ secrets.PAT }}' >> ${{ github.workspace }}/.npmrc
           yarn eas-build-pre-install
-
-      - name: 📦 Get release channel 
-        id: retrieve-rc
-        env:
-          ENV: ${{ needs.retrieve-env.outputs.env }}
-        shell: bash
-        run: |
-          rc=`cat ./eas.json | jq -r ".build .$ENV .channel"`
-          echo "##[set-output name=releaseChannel;]$(echo ${rc})"
       
       - name: 🚀 Publish preview
         env:
           ENV: ${{ needs.retrieve-env.outputs.env }}
-        run: expo publish --release-channel=${{ steps.retrieve-rc.outputs.releaseChannel }} --non-interactive
+        run: eas update --auto
