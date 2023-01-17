@@ -55,9 +55,8 @@ jobs:
       - name: 🚀 Create EAS Channel
         env: 
           ENV: ${{ needs.retrieve-env.outputs.env }}
-        run: | 
-         echo "EAS_JSON=$(jq -c . < eas.json)" >> $GITHUB_ENV
-         export CHANNEL='${{ fromJson(env.EAS_JSON).build.production.channel }}'
+        run: |
+         CHANNEL=$(cat eas.json | jq ".build.production.channel")
          eas channel:edit "$CHANNEL" --branch "master"
 
       - name: 🚀 Build app
