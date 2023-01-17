@@ -52,6 +52,13 @@ jobs:
           echo '//npm.pkg.github.com/:_authToken=${{ secrets.PAT }}' >> ${{ github.workspace }}/.npmrc
           yarn install
 
+      - name: 🚀 Create EAS Channel
+        env: 
+          ENV: ${{ needs.retrieve-env.outputs.env }}
+        run: |
+         CHANNEL=$(cat eas.json | jq ".build.production.channel")
+         eas channel:edit "$CHANNEL" --branch "master"
+
       - name: 🚀 Build app
         env: 
           ENV: ${{ needs.retrieve-env.outputs.env }}
