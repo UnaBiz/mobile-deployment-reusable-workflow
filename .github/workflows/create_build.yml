@@ -57,6 +57,7 @@ jobs:
           ENV: ${{ needs.retrieve-env.outputs.env }}
         run: |
          CHANNEL=$(cat eas.json | jq ".build.production.channel")
+         eas channel:create "$CHANNEL"
          eas channel:edit "$CHANNEL" --branch "master"
 
       - name: 🚀 Build app
