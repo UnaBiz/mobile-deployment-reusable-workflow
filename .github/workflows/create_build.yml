@@ -72,6 +72,12 @@ jobs:
     steps:
       - name: 🏗 Setup repo
         uses: actions/checkout@v3
+        
+      - name: 🏗 Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14.x
+          cache: yarn
 
       - name: 🏗 Setup Expo and EAS
         uses:  expo/expo-github-action@v7
@@ -79,6 +85,12 @@ jobs:
           expo-version: latest
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: 📦 Install dependencies
+        run: |
+          echo '@unabiz:registry=https://npm.pkg.github.com' > ${{ github.workspace }}/.npmrc
+          echo '//npm.pkg.github.com/:_authToken=${{ secrets.PAT }}' >> ${{ github.workspace }}/.npmrc
+          yarn install
 
       - name: Publish IOS
         env: 
@@ -91,6 +103,12 @@ jobs:
     steps:
       - name: 🏗 Setup repo
         uses: actions/checkout@v3
+      
+      - name: 🏗 Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14.x
+          cache: yarn
 
       - name: 🏗 Setup Expo and EAS
         uses: expo/expo-github-action@v7
@@ -105,6 +123,12 @@ jobs:
           expo-version: latest
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: 📦 Install dependencies
+        run: |
+          echo '@unabiz:registry=https://npm.pkg.github.com' > ${{ github.workspace }}/.npmrc
+          echo '//npm.pkg.github.com/:_authToken=${{ secrets.PAT }}' >> ${{ github.workspace }}/.npmrc
+          yarn install
 
       - name: Publish Android
         env: 
