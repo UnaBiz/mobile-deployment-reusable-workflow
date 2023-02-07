@@ -61,4 +61,4 @@ jobs:
       - name: 🚀 Publish preview
         env:
           ENV: ${{ needs.retrieve-env.outputs.env }}
-        run: eas update --auto
+        run: eas update --non-interactive
