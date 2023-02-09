@@ -64,4 +64,6 @@ jobs:
       - name: 🚀 Build app
         env: 
           ENV: ${{ needs.retrieve-env.outputs.env }}
-        run: eas build --auto-submit  --no-wait --non-interactive --platform all --profile $ENV
+        run: |
+          CHANNEL=$(cat eas.json | jq ".build.production.channel")
+          eas build --auto-submit  --no-wait --channel "$CHANNEL"  --platform all --profile $ENV
