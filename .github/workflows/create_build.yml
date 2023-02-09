@@ -58,8 +58,8 @@ jobs:
         run: |
          eas project:info
          CHANNEL=$(cat eas.json | jq ".build.production.channel")
-         eas channel:create "$CHANNEL" || echo "EAS Channel already existing"
-         eas channel:edit "$CHANNEL" --branch "master" || echo "EAS Channel already assigned"
+         eas channel:create $CHANNEL || echo "EAS Channel already existing"
+         eas channel:edit $CHANNEL --branch $CHANNEL || echo "EAS Channel already assigned"
 
       - name: 🚀 Build app
         env: 
