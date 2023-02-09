@@ -63,4 +63,4 @@ jobs:
           ENV: ${{ needs.retrieve-env.outputs.env }}
         run:
           CHANNEL=$(cat eas.json | jq ".build.production.channel")
-          eas update --channel $CHANNEL --message "New updates" --non-interactive
+          eas update --channel $CHANNEL --message "Updating... Adding the new features."
