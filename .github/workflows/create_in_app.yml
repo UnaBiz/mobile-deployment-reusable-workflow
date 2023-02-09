@@ -61,6 +61,6 @@ jobs:
       - name: 🚀 Publish preview
         env:
           ENV: ${{ needs.retrieve-env.outputs.env }}
-        run:
-          CHANNEL=$(cat eas.json | jq ".build.production.channel")
-          eas update --channel $CHANNEL --message "Updating... Adding the new features."
+        run: |
+          BRANCH=$(cat eas.json | jq ".build.production.channel")
+          eas update --branch $BRANCH --message "Updating the app"
