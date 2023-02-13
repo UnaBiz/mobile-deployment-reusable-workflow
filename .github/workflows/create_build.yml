@@ -56,10 +56,13 @@ jobs:
         env: 
           ENV: ${{ needs.retrieve-env.outputs.env }}
         run: |
-         eas project:info
-         CHANNEL=$(cat eas.json | jq ".build.production.channel")
-         eas channel:create $CHANNEL || echo "EAS Channel already existing"
-         eas channel:edit $CHANNEL --branch $CHANNEL || echo "EAS Channel already assigned"
+          eas project:info
+          BRANCH=$(cat eas.json | jq ".build.production.channel")
+          BRANCH=${BRANCH#"\""}
+          BRANCH=${BRANCH%"\""}
+          echo $BRANCH
+          eas channel:create $CHANNEL || echo "EAS Channel already existing"
+          eas channel:edit $CHANNEL --branch $CHANNEL || echo "EAS Channel already assigned"
 
       - name: 🚀 Build app
         env: 

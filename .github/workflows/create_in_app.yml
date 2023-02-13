@@ -63,4 +63,7 @@ jobs:
           ENV: ${{ needs.retrieve-env.outputs.env }}
         run: |
           BRANCH=$(cat eas.json | jq ".build.production.channel")
+          BRANCH=${BRANCH#"\""}
+          BRANCH=${BRANCH%"\""}
+          echo $BRANCH
           eas update --branch $BRANCH --message "Updating the app"
